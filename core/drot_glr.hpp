@@ -84,7 +84,7 @@ void reduce_all_sum(int n_block_left,
     reduce_axis_sum(1, n_block_left, p_sum_1, p_sum_2, sum);
 }
 
-template <typename T, int NGROUPS>
+template <typename T>
 void group_lasso_regularizer_step_for_small(T *x,
         const T step_size,
         const T lambda,
@@ -103,6 +103,7 @@ void group_lasso_regularizer_step_for_small(T *x,
         const T *q,
         const int n_rows,
         const int n_cols,
+        const int NGROUPS,
         const int work_size_update_x,
         const int n_iter,
         T *aux) {
@@ -113,7 +114,7 @@ void group_lasso_regularizer_step_for_small(T *x,
     dim3 grid_update_x(NGROUPS, CEILDIV(n_cols, UPDATE_X_SMALL_WORK_SIZE_Y));
     dim3 block_update_x(UPDATE_X_SMALL_THREAD_SIZE);
 
-    group_lasso_regularizer_update_x_for_small<T, NGROUPS><<<grid_update_x, block_update_x>>>(x,
+    group_lasso_regularizer_update_x_for_small<T><<<grid_update_x, block_update_x>>>(x,
             phi1,
             phi2,
             c,
@@ -121,6 +122,7 @@ void group_lasso_regularizer_step_for_small(T *x,
             lambda,
             n_rows,
             n_cols,
+            NGROUPS,
             row_sum_1,
             col_sum_1,
             &aux[0]
@@ -140,7 +142,7 @@ void group_lasso_regularizer_step_for_small(T *x,
     reduce_axis_sum<T>(1, CEILDIV(n_cols, UPDATE_AUX_BLOCK_SIZE_X) * 2, col_sum_1, col_sum_2, &aux[3]);
 }
 
-template <typename T, int NGROUPS>
+template <typename T>
 void group_lasso_regularizer_step(T *x,
         const T step_size,
         const T lambda,
@@ -164,6 +166,7 @@ void group_lasso_regularizer_step(T *x,
         const T *q,
         const int n_rows,
         const int n_cols,
+        const int NGROUPS,
         const int work_size_update_x,
         const int n_iter,
         T *aux) {
@@ -176,7 +179,7 @@ void group_lasso_regularizer_step(T *x,
             CEILDIV(n_cols, work_size_update_x));
     dim3 block_update_x(UPDATE_X_THREAD_SIZE_X);
     
-    group_lasso_regularizer_update_x<T, NGROUPS><<<grid_update_x, block_update_x>>>(
+    group_lasso_regularizer_update_x<T><<<grid_update_x, block_update_x>>>(
             x,
             phi1,
             phi2,
@@ -186,6 +189,7 @@ void group_lasso_regularizer_step(T *x,
             n_cols,
             n_rows * n_cols,
             work_size_update_x,
+            NGROUPS,
             col_sum_1,
             col_obj_sum,
             col_norm_sum
@@ -208,11 +212,12 @@ void group_lasso_regularizer_step(T *x,
             NGROUPS,
             CEILDIV(n_cols, APPLY_NORM_WORK_SIZE_Y));
     dim3 block_apply_norm(APPLY_NORM_THREAD_SIZE);
-    group_lasso_regularizer_apply_norm<T, NGROUPS><<<grid_apply_norm, block_apply_norm>>>(
+    group_lasso_regularizer_apply_norm<T><<<grid_apply_norm, block_apply_norm>>>(
             x,
             n_rows,
             n_cols,
             n_rows * n_cols,
+            NGROUPS,
             group_norm_sum,
             row_sum_1
     );
@@ -234,13 +239,14 @@ void group_lasso_regularizer_step(T *x,
     reduce_axis_sum<T>(1, CEILDIV(n_cols, UPDATE_AUX_BLOCK_SIZE_X) * 2, col_sum_1, col_sum_2, &aux[3]);
 }
 
-template <typename T, int NGROUPS>
+template <typename T>
 void group_lasso_regularizer_drot(
         const T *c,
         const T *p,
         const T *q,
         const int n_rows,
         const int n_cols,
+        const int NGROUPS,
         const T step_size,
         const T lambda,
         const int max_iters,
@@ -275,7 +281,7 @@ void group_lasso_regularizer_drot(
             cudaMemset(row_sum_1, 0, n_rows * CEILDIV(n_cols, UPDATE_X_SMALL_WORK_SIZE_Y) * sizeof(T));
             cudaMemset(col_sum_1, 0, n_cols * CEILDIV(CEILDIV(n_rows, NGROUPS), UPDATE_X_BLOCK_SIZE_X) * NGROUPS * sizeof(T));
             cudaMemset(col_obj_sum, 0, n_cols * CEILDIV(CEILDIV(n_rows, NGROUPS), UPDATE_X_BLOCK_SIZE_X) * NGROUPS * sizeof(T));
-            group_lasso_regularizer_step_for_small<T, NGROUPS>(
+            group_lasso_regularizer_step_for_small<T>(
                     x,
                     step_size,
                     lambda,
@@ -294,6 +300,7 @@ void group_lasso_regularizer_drot(
                     q,
                     n_rows,
                     n_cols,
+                    NGROUPS,
                     work_size_update_x,
                     n_iter,
                     aux
@@ -303,7 +310,7 @@ void group_lasso_regularizer_drot(
             cudaMemset(col_sum_1, 0, n_cols * CEILDIV(CEILDIV(n_rows, NGROUPS), UPDATE_X_BLOCK_SIZE_X) * NGROUPS * sizeof(T));
             cudaMemset(col_obj_sum, 0, n_cols * CEILDIV(CEILDIV(n_rows, NGROUPS), UPDATE_X_BLOCK_SIZE_X) * NGROUPS * sizeof(T));
             cudaMemset(col_norm_sum, 0, n_cols * CEILDIV(CEILDIV(n_rows, NGROUPS), UPDATE_X_BLOCK_SIZE_X) * NGROUPS * sizeof(T));
-            group_lasso_regularizer_step<T, NGROUPS>(
+            group_lasso_regularizer_step<T>(
                     x,
                     step_size,
                     lambda,
@@ -327,6 +334,7 @@ void group_lasso_regularizer_drot(
                     q,
                     n_rows,
                     n_cols,
+                    NGROUPS,
                     work_size_update_x,
                     n_iter,
                     aux
@@ -351,12 +359,13 @@ int _get_work_size_update_x(int n_rows, int n_cols) {
     return exp2(min(max(work_size_log2, 2), 6));
 }
 
-template <typename T, int NGROUPS>
+template <typename T>
 T* group_lasso_regularizer_drot_wrapper(const T *_c, // cost
         const T *_p, // distribution: p
         const T *_q, // distribution: q
         const int n_rows, // number of rows
         const int n_cols, // number of columns
+        const int NGROUPS, // number of classes
         const T step_size, // rho
         const T r_weight, // weight for group-lasso regularizer
         const int max_iters, // maximal number of iter
@@ -469,8 +478,8 @@ T* group_lasso_regularizer_drot_wrapper(const T *_c, // cost
     cudaEventSynchronize(prep_end);
 
     // main starts
-    group_lasso_regularizer_drot<T, NGROUPS>(
-                c, p, q, n_rows, n_cols, step_size, lambda,
+    group_lasso_regularizer_drot<T>(
+                c, p, q, n_rows, n_cols, NGROUPS, step_size, lambda,
                 max_iters, eps, work_size_update_x, x, a, row_sum,
                 row_sum_1, row_sum_2, b, col_sum, col_sum_1, col_sum_2,
                 col_obj_sum, col_norm_sum, group_sum, group_obj_sum,

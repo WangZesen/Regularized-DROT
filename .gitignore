@@ -4,3 +4,6 @@
 /pytorch/build
 /pytorch/dist
 /pytorch/reg_drot.egg-info
+/benchmark/bin/
+/benchmark/data/
+/benchmark/log/

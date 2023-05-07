@@ -18,10 +18,13 @@ void multi_experiment(const std::string filedir,
         const std::string outdir,
         const int n_rows,
         const int n_cols,
+        const int n_groups,
         const int n_tests,
         const T step_size,
         const T r_weight,
         const bool use_warmup_init,
+        const T eps,
+        const int max_iters,
         const int benchmark) {
     
     std::vector<T> prep_duration, run_duration, n_iteration, objectives;
@@ -34,7 +37,7 @@ void multi_experiment(const std::string filedir,
 
     for (int idx = 0; idx < n_tests; idx++) {
         filename = filedir + "/cmatrix_" + std::to_string(n_rows) + "_" + std::to_string(n_cols) + "_"
-            + std::to_string(N_GROUPS) + "_" + std::to_string(idx);
+            + std::to_string(n_groups) + "_" + std::to_string(idx);
         // load C matrix
         auto cost = utils::load<T>(filename, n_rows, n_cols);
 
@@ -43,12 +46,12 @@ void multi_experiment(const std::string filedir,
         int test_n_iter = 0;
         T objective = 0;
         
-        T *x = group_lasso_regularizer_drot_wrapper<T, N_GROUPS>(&cost[0], &p[0], &q[0], n_rows,
-            n_cols, step_size, r_weight, MAX_ITERS, EPS, &test_run_dur_in_ms,
+        T *x = group_lasso_regularizer_drot_wrapper<T>(&cost[0], &p[0], &q[0], n_rows,
+            n_cols, n_groups, step_size, r_weight, max_iters, eps, &test_run_dur_in_ms,
             &test_prep_dur_in_ms, &test_n_iter, &objective, use_warmup_init, true);
         
         filename = outdir + "/drot-gl_" + std::to_string(n_rows) + "_" + std::to_string(n_cols) + "_"
-            + std::to_string(N_GROUPS) + "_" + std::to_string(idx);
+            + std::to_string(n_groups) + "_" + std::to_string(idx);
 
         utils::save_trans<T>(x, filename, n_rows, n_cols);
         free(x);
@@ -87,48 +90,61 @@ void multi_experiment(const std::string filedir,
 
         T mean_obj, std_obj;
         utils::calc_mean_std<T>(objectives, &mean_obj, &std_obj);
-        
-        printf("gl_drot\t%5d\t%5d\t%3d\t%10.6f\t%1d\t%14.10f\t%14.10f\t%14.10f\t%14.10f\t%14.10f\t%14.10f\t%14.8f\t%14.8f\t%14.10f\n",
-                n_rows,
-                n_cols,
-                n_tests-1,
-                EPS,
-                use_warmup_init,
-                step_size * (n_rows + n_cols),
-                r_weight,
-                mean_dur,
-                std_dur,
-                mean_obj,
-                std_obj,
-                mean_n_iter,
-                std_n_iter,
-                mean_dur / mean_n_iter
-        );
+
+        printf("test_index\tmethod\tn\tm\tn_class\teps\tuse_warmup_init\trho\tr_weight\tmax_iters\truntime_ms\tobjective\tn_iteration\truntime_ms_per_iteration\n");
+        for (int idx = 1; idx < n_tests; idx++) {
+            printf("%d\tgl_drot\t%d\t%d\t%d\t%.8f\t%d\t%.8f\t%.8f\t%d\t%.8f\t%.8f\t%d\t%.8f\n",
+                idx, n_rows, n_cols, n_groups, eps, use_warmup_init, step_size * (n_rows + n_cols), r_weight, max_iters,
+                run_duration[idx], objectives[idx], int(n_iteration[idx]), run_duration[idx] / float(n_iteration[idx]));
+        }
+
+        // printf("gl_drot\t%5d\t%5d\t%3d\t%10.6f\t%1d\t%14.10f\t%14.10f\t%14.10f\t%14.10f\t%14.10f\t%14.10f\t%14.8f\t%14.8f\t%14.10f\n",
+        //         n_rows,
+        //         n_cols,
+        //         n_tests-1,
+        //         EPS,
+        //         use_warmup_init,
+        //         step_size * (n_rows + n_cols),
+        //         r_weight,
+        //         mean_dur,
+        //         std_dur,
+        //         mean_obj,
+        //         std_obj,
+        //         mean_n_iter,
+        //         std_n_iter,
+        //         mean_dur / mean_n_iter
+        // );
     }
 }
 
 int main(int argc, char *argv[]) {
     int n_rows = DEFAULT_N_ROWS;
     int n_cols = DEFAULT_N_COLS;
+    int n_groups = N_GROUPS;
     int n_tests = DEFAULT_N_TESTS;
     float step_size = ALPHA / (float) (n_rows + n_cols);
     float r_weight = R_WEIGHT;
     int benchmark = 0;
     bool use_warmup_init = USE_WARM_UP;
+    float eps = EPS;
+    float max_iters = MAX_ITERS;
     std::string filedir = "./class/";
     std::string outdir = "./tmp/";
-    if (argc == 10) {
+    if (argc == 13) {
         filedir = argv[1];
         outdir = argv[2];
         n_rows = atoi(argv[3]);
         n_cols = atoi(argv[4]);
-        n_tests = atoi(argv[5]);
-        step_size = atof(argv[6]) / (float) (n_rows + n_cols);
-        r_weight = atof(argv[7]);
-        use_warmup_init = (atoi(argv[8]) > 0);
-        benchmark = atoi(argv[9]);
+        n_groups = atoi(argv[5]);
+        n_tests = atoi(argv[6]);
+        step_size = atof(argv[7]) / (float) (n_rows + n_cols);
+        r_weight = atof(argv[8]);
+        use_warmup_init = (atoi(argv[9]) > 0);
+        eps = atof(argv[10]);
+        max_iters = atoi(argv[11]);
+        benchmark = atoi(argv[12]);
     } else {
-        printf("Expected arguments: <cmat_dir> <out_dir> <n_rows> <n_cols> <n_tests> <alpha> <r_weight> <use_warmup_init> <is_benchmark>\n");
+        printf("Expected arguments: <cmat_dir> <out_dir> <n_rows> <n_cols> <n_groups> <n_tests> <alpha> <r_weight> <use_warmup_init> <eps> <max_iters> <is_benchmark>\n");
         printf("Using default values...\n");
     }
     
@@ -137,7 +153,7 @@ int main(int argc, char *argv[]) {
         printf("step_size: %.8f, r_weight: %.8f\n", step_size, r_weight);
     }
 
-    multi_experiment<float>(filedir, outdir, n_rows, n_cols, n_tests, step_size, r_weight, use_warmup_init, benchmark);
+    multi_experiment<float>(filedir, outdir, n_rows, n_cols, n_groups, n_tests, step_size, r_weight, use_warmup_init, eps, max_iters, benchmark);
 
     return 0;
 }

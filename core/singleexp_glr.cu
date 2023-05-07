@@ -12,10 +12,11 @@ const int DEFAULT_N_COLS = 2000;
 const int N_GROUPS = 2;
 const bool USE_WARM_UP = true;
 
-template <typename T, int NGROUPS>
+template <typename T>
 void multi_experiment(const std::string filedir,
         const int n_rows,
         const int n_cols,
+        const int NGROUPS,
         const T step_size,
         const T r_weight,
         const bool use_warmup_init) {
@@ -34,8 +35,8 @@ void multi_experiment(const std::string filedir,
     int test_n_iter = 0;
     T objective = 0;
     
-    T *x = group_lasso_regularizer_drot_wrapper<T, NGROUPS>(&cost[0], &p[0], &q[0], n_rows,
-        n_cols, step_size, r_weight, MAX_ITERS, EPS, &test_run_dur_in_ms,
+    T *x = group_lasso_regularizer_drot_wrapper<T>(&cost[0], &p[0], &q[0], n_rows,
+        n_cols, NGROUPS, step_size, r_weight, MAX_ITERS, EPS, &test_run_dur_in_ms,
         &test_prep_dur_in_ms, &test_n_iter, &objective, use_warmup_init, true);
     
     for (int j = 0; j < n_cols; j++) {
@@ -71,27 +72,7 @@ int main(int argc, char *argv[]) {
         printf("Using default values...\n");
     }
     
-    if (n_groups == 2) {
-        multi_experiment<float, 2>(filedir, n_rows, n_cols, step_size, r_weight, use_warmup_init);
-    } else
-    if (n_groups == 3) {
-        multi_experiment<float, 3>(filedir, n_rows, n_cols, step_size, r_weight, use_warmup_init);
-    } else
-    if (n_groups == 4) {
-        multi_experiment<float, 4>(filedir, n_rows, n_cols, step_size, r_weight, use_warmup_init);
-    } else
-    if (n_groups == 5) {
-        multi_experiment<float, 5>(filedir, n_rows, n_cols, step_size, r_weight, use_warmup_init);
-    } else
-    if (n_groups == 6) {
-        multi_experiment<float, 6>(filedir, n_rows, n_cols, step_size, r_weight, use_warmup_init);
-    } else
-    if (n_groups == 7) {
-        multi_experiment<float, 7>(filedir, n_rows, n_cols, step_size, r_weight, use_warmup_init);
-    } else
-    if (n_groups == 8) {
-        multi_experiment<float, 8>(filedir, n_rows, n_cols, step_size, r_weight, use_warmup_init);
-    }
+    multi_experiment<float>(filedir, n_rows, n_cols, n_groups, step_size, r_weight, use_warmup_init);
 
     return 0;
 }

@@ -20,6 +20,8 @@ void multi_experiment(const std::string filedir,
         const T step_size,
         const T r_weight,
         const bool use_warmup_init,
+        const T eps,
+        const int max_iters,
         const int benchmark) {
     
     std::vector<T> prep_duration, run_duration, n_iteration, objectives;
@@ -43,7 +45,7 @@ void multi_experiment(const std::string filedir,
         T objective = 0;
         
         x = quadratic_regularizer_drot_wrapper(&cost[0], &p[0], &q[0], n_rows,
-            n_cols, step_size, r_weight, MAX_ITERS, EPS, &test_run_dur_in_ms,
+            n_cols, step_size, r_weight, max_iters, eps, &test_run_dur_in_ms,
             &test_prep_dur_in_ms, &test_n_iter, &objective, use_warmup_init, false);
 
         prep_duration.push_back(test_prep_dur_in_ms);
@@ -52,7 +54,7 @@ void multi_experiment(const std::string filedir,
         objectives.push_back(objective);
     }
 
-    if (benchmark == 0) {    
+    if (benchmark == 0) {
         printf("R Weight = %.4f, # Tests = %d\n", (T) r_weight, n_tests - 1);
 
         float mean_dur, std_dur;
@@ -80,23 +82,12 @@ void multi_experiment(const std::string filedir,
 
         T mean_obj, std_obj;
         utils::calc_mean_std<T>(objectives, &mean_obj, &std_obj);
-        
-        printf("q_drot\t%5d\t%5d\t%3d\t%10.6f\t%1d\t%14.10f\t%10.5f\t%14.10f\t%14.10f\t%14.10f\t%14.10f\t%14.8f\t%14.8f\t%14.10f\n",
-                n_rows,
-                n_cols,
-                n_tests-1,
-                EPS,
-                use_warmup_init,
-                step_size * (n_rows + n_cols),
-                r_weight,
-                mean_dur,
-                std_dur,
-                mean_obj,
-                std_obj,
-                mean_n_iter,
-                std_n_iter,
-                mean_dur / mean_n_iter
-        );
+        printf("test_index\tmethod\tn\tm\teps\tuse_warmup_init\trho\tr_weight\tmax_iters\truntime_ms\tobjective\tn_iteration\truntime_ms_per_iteration\n");
+        for (int idx = 1; idx < n_tests; idx++) {
+            printf("%d\tquad_drot\t%d\t%d\t%.8f\t%d\t%.8f\t%.8f\t%d\t%.8f\t%.8f\t%d\t%.8f\n",
+                idx, n_rows, n_cols, eps, use_warmup_init, step_size * (n_rows + n_cols), r_weight, max_iters,
+                run_duration[idx], objectives[idx], int(n_iteration[idx]), run_duration[idx] / float(n_iteration[idx]));
+        }
     }
 }
 
@@ -108,8 +99,10 @@ int main(int argc, char *argv[]) {
     float r_weight = R_WEIGHT;
     int benchmark = 0;
     bool use_warmup_init = USE_WARM_UP;
+    float eps = EPS;
+    float max_iters = MAX_ITERS;
     std::string filedir = "./data/";
-    if (argc == 9) {
+    if (argc == 11) {
         filedir = argv[1];
         n_rows = atoi(argv[2]);
         n_cols = atoi(argv[3]);
@@ -117,9 +110,11 @@ int main(int argc, char *argv[]) {
         step_size = atof(argv[5]) / (float) (n_rows + n_cols);
         r_weight = atof(argv[6]);
         use_warmup_init = (atoi(argv[7]) > 0);
-        benchmark = atoi(argv[8]);
+        eps = atof(argv[8]);
+        max_iters = atoi(argv[9]);
+        benchmark = atoi(argv[10]);
     } else {
-        printf("Expected arguments: <cmat_dir> <n_rows> <n_cols> <n_tests> <alpha> <q_weight> <use_warmup_init> <is_benchmark>\n");
+        printf("Expected arguments: <cmat_dir> <n_rows> <n_cols> <n_tests> <alpha> <q_weight> <use_warmup_init> <eps> <max_iters> <is_benchmark>\n");
         printf("Using default values...\n");
     }
     
@@ -128,7 +123,7 @@ int main(int argc, char *argv[]) {
         printf("step_size: %.8f, q_weight: %.8f\n", step_size, r_weight);
     }
 
-    multi_experiment<float>(filedir, n_rows, n_cols, n_tests, step_size, r_weight, use_warmup_init, benchmark);
+    multi_experiment<float>(filedir, n_rows, n_cols, n_tests, step_size, r_weight, use_warmup_init, eps, max_iters, benchmark);
 
     return 0;
 }

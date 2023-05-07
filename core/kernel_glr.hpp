@@ -56,7 +56,7 @@ __inline__ __device__ T _warp_reduce_sum_bc(T val) {
     return val;
 }
 
-template <typename T, int NGROUPS>
+template <typename T>
 __global__ void group_lasso_regularizer_update_x_for_small(T *x,
         const T * __restrict__ phi1,
         const T * __restrict__ phi2,
@@ -65,6 +65,7 @@ __global__ void group_lasso_regularizer_update_x_for_small(T *x,
         const T lambda,
         const int n_rows,
         const int n_cols,
+        const int NGROUPS,
         T *block_row_sum,
         T *group_col_sum,
         T *obj) {
@@ -159,7 +160,7 @@ __global__ void group_lasso_regularizer_update_x_for_small(T *x,
     atomicAdd(obj, obj_sum);
 }
 
-template<typename T, int NGROUPS>
+template<typename T>
 __global__ void group_lasso_regularizer_update_x(
         T *x,
         const T * __restrict__ phi1,
@@ -170,6 +171,7 @@ __global__ void group_lasso_regularizer_update_x(
         const int n_cols,
         const int n_total,
         const int work_size,
+        const int NGROUPS,
         T *group_col_sum,
         T *group_obj_col_sum,
         T *group_norm_col_sum) {
@@ -188,11 +190,6 @@ __global__ void group_lasso_regularizer_update_x(
 
     __shared__ T s_phi1[G_BLOCK_SIZE * 2];
     __shared__ T s_phi2[G_BLOCK_SIZE + 1];
-
-    // if ((blockIdx.x == 0) && (blockIdx.y == 0) && (blockIdx.z == 0) && (threadIdx.x == 0)) {
-    //     printf("321\n");
-    //     // printf("!! %.10f %.10f %.10f\n", x_val, s_phi1[threadIdx.x + shift], s_phi2[idx]);
-    // }
 
     // load phi1 to shared memory
     s_phi1[threadIdx.x] = (n < n_rows)?phi1[n]:phi1[n - n_rows];
@@ -328,12 +325,13 @@ __global__ void group_lasso_regularizer_update_norm(
     }
 }
 
-template<typename T, int NGROUPS>
+template <typename T>
 __global__ void group_lasso_regularizer_apply_norm(
         T *x,
         const int n_rows,
         const int n_cols,
         const int n_total,
+        const int NGROUPS,
         const T * __restrict__ group_scale,
         T *block_row_sum) {
     
