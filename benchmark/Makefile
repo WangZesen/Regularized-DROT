@@ -10,36 +10,44 @@ OTDATADIR := $(DATADIR)/data/ot
 DADATADIR := $(DATADIR)/data/da
 DAOUTDATADIR := $(DATADIR)/data/da-out
 
-TESTSETS := "100 100 2 1e-3 1e-4 10000" "500 500 2 0. 1e-4 10000" \
-"1000 1000 2 1e-3 1e-4 10000" "2000 2000 2 0. 1e-4 10000" \
-"2000 3000 2 1e-5 1e-4 10000" "3000 2000 2 0. 1e-4 10000" \
-"5000 5000 2 0. 1e-4 10000"
-NTESTS := 11
+DATASETS := "100 100 2" "500 500 2" "1000 1000 2" "2000 2000 2" "2000 3000 2" "3000 2000 2" "5000 5000 2"
+OTPARAMSETS := "0. 1e-4" "1e-5 1e-4" "5e-5 1e-4" "1e-4 1e-4" "5e-4 1e-4" "1e-3 1e-4" "5e-3 1e-4" "1e-2 1e-4" "5e-2 1e-4" "1e-1 1e-4" "5e-1 1e-4" "1. 1e-4"
+DAPARAMSETS := "0. 1e-4" "1e-6 1e-4" "5e-6 1e-4" "1e-5 1e-4" "5e-5 1e-4" "1e-4 1e-4"
+NTESTS := 21
 
 DROTRHO := 2.0
 DROTUSEWARMUP = 1
+DROTMAXITER = 20000
 
-.PHONY: benchmark
+.PHONY: benchmark gendata
 
 benchmark: build
 	mkdir -p log
-	for i in $(TESTSETS); do \
+	for i in $(DATASETS); do \
 		set -- $$i; \
 		n=$$1; \
     	m=$$2; \
 		c=$$3; \
-		r_weight=$$4; \
-		eps=$$5; \
-		max_iters=$$6; \
-		./bin/multiexp_qr.o $(OTDATADIR) $$n $$m $(NTESTS) $(DROTRHO) $$r_weight $(DROTUSEWARMUP) $$eps $$max_iters 1 >> log/quad_drot.log; \
-		./bin/multiexp_glr.o $(DADATADIR) $(DAOUTDATADIR) $$n $$m $$c $(NTESTS) $(DROTRHO) $$r_weight $(DROTUSEWARMUP) $$eps $$max_iters 1 >> log/gl_drot.log; \
+		for j in $(OTPARAMSETS); do \
+			set -- $$j; \
+			r_weight=$$1; \
+			eps=$$2; \
+			./bin/multiexp_qr.o $(OTDATADIR) $$n $$m $(NTESTS) $(DROTRHO) $$r_weight $(DROTUSEWARMUP) $$eps $(DROTMAXITER) 1 >> log/quad_drot.log; \
+		done; \
+		for j in $(DAPARAMSETS); do \
+			set -- $$j; \
+			r_weight=$$1; \
+			eps=$$2; \
+			./bin/multiexp_glr.o $(DADATADIR) $(DAOUTDATADIR) $$n $$m $$c $(NTESTS) $(DROTRHO) $$r_weight $(DROTUSEWARMUP) $$eps $(DROTMAXITER) 1 >> log/gl_drot.log; \
+		done; \
 	done
 
 gendata:
-	mkdir -p $(OTDATADIR)
-	mkdir -p $(DADATADIR)
-	mkdir -p $(DAOUTDATADIR)
-	for i in $(TESTSETS); do \
+	mkdir $(DATADIR)/data
+	mkdir $(OTDATADIR)
+	mkdir $(DADATADIR)
+	mkdir $(DAOUTDATADIR)
+	for i in $(DATASETS); do \
 		set -- $$i; \
 		n=$$1; \
     	m=$$2; \

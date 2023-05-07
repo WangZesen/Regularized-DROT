@@ -37,7 +37,7 @@ The results are generated at
 
 ## Results
 
-The following results are generated on Linux server with one `Nvidia V100` GPU.
-- [Quadratically Regularized DROT](./result/quad_drot.log)
-- [Group-Lasso Regularized DROT](./result/gl_drot.log)
+The following benchmark results are generated on a Linux server with one `Tesla V100-SXM2-32GB` GPU.
+- Quadratically Regularized DROT: [result/quad_drot.log](./result/quad_drot.log)
+- Group-Lasso Regularized DROT: [result/gl_drot.log](./result/gl_drot.log)
 
