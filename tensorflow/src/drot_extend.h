@@ -81,6 +81,6 @@ void quadratic_regularizer_drot_tf_float32(
 //         double *aux
 // );
 
-int _get_work_size_update_x(int n_rows, int n_cols);
+int _q_get_work_size_update_x(int n_rows, int n_cols);
 
 #endif // DROT_KERNEL_H_

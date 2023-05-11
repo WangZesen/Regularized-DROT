@@ -117,7 +117,7 @@ class QuadraticDrotOp : public OpKernel {
 
             int n_cols = static_cast<int>(c.shape().dim_size(0));
             int n_rows = static_cast<int>(c.shape().dim_size(1));
-            int work_size_update_x = _get_work_size_update_x(n_rows, n_cols);
+            int work_size_update_x = _q_get_work_size_update_x(n_rows, n_cols);
 
             OP_REQUIRES(context, c.NumElements() <= tensorflow::kint32max,
                         errors::InvalidArgument("Too many elements in cost matrix"));

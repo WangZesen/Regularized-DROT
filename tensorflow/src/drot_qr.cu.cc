@@ -35,7 +35,7 @@ void quadratic_regularizer_drot_tf_float32(
     step_size = step_size / (float(n_rows) + float(n_cols));
     _max_iters = static_cast<int>(max_iters_t);
 
-    const float scale = 1. / (1 + step_size * (n_rows + n_cols) * _r_weight);
+    const float scale = 1 + step_size * (n_rows + n_cols) * _r_weight;
     row_size = n_rows * sizeof(float);
     col_size = n_cols * sizeof(float);
     mat_size = n_rows * n_cols * sizeof(float);
@@ -43,13 +43,13 @@ void quadratic_regularizer_drot_tf_float32(
     // initialization
     const float _n = float(n_rows);
     const float _m = float(n_cols);
-    const float _k = float(1.0) * float(2.) * _n * _n * _m * _m / (_n * _n * _n + _m * _m * _m) - float(2.);
+    const float _k = float(1.0) * step_size * _n * _m - float(2.);
 
-    const float v_phi1 = _m * (_k + float(2)) / (_n * _n) / (_m + _n);
-    const float v_phi2 = _n * (_k + float(2)) / (_m * _m) / (_m + _n);
-    const float v_a = _k / _n;
-    const float v_b = _k / _m;
-    const float v_alpha = _k;
+    const float v_phi1 = (_k + float(2)) / _n / (_m + _n);
+    const float v_phi2 = (_k + float(2)) / _m / (_m + _n);
+    const float v_a = (_k + float(1)) / _n;
+    const float v_b = (_k + float(1)) / _m;
+    const float v_alpha = _k + float(1);
     const float v_beta = 0;
 
     std::vector<float> c_phi1(n_rows, v_phi1);
