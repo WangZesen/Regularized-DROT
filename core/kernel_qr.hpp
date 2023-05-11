@@ -87,7 +87,7 @@ __global__ void quadratic_regularizer_update_x_even_old(
         for (int idx = 0; idx < tm; idx++) {
             x_val = x[offset];
             c_val = c[offset];
-            x_val = max(x_val + r_phi1 + s_phi2[idx] - step_size * c_val, 0.) * scale;
+            x_val = max(x_val + r_phi1 + s_phi2[idx] - step_size * c_val, 0.) / scale;
             x[offset] = x_val - step_size * c_val;
             t_row_sum += x_val;
             t_obj_sum += x_val * c_val;
@@ -148,7 +148,7 @@ __global__ void quadratic_regularizer_update_x_odd_old(
     if (n < n_rows) {
         for (int idx = 0; idx < tm; idx++) {
             x_val = x[offset];
-            x_val = max(x_val + r_phi1 + s_phi2[idx], 0.) * scale;
+            x_val = max(x_val + r_phi1 + s_phi2[idx], 0.) / scale;
             x[offset] = x_val;
             t_row_sum += x_val;
             t_col_sum = _warp_reduce_sum(x_val);
@@ -238,8 +238,8 @@ __global__ void quadratic_regularizer_update_x_even(
         c_val = (offset + shift < n_total)?c[offset + shift]:1e10;
         // compute update
         x_val = (n + shift < n_rows)?
-                max(x_val + r_phi1[threadIdx.x + shift] + s_phi2[idx] - step_size * c_val, 0.) * scale:
-                max(x_val + r_phi1[threadIdx.x + shift] + s_phi2[idx + 1] - step_size * c_val, 0.) * scale;
+                max(x_val + r_phi1[threadIdx.x + shift] + s_phi2[idx] - step_size * c_val, 0.) / scale:
+                max(x_val + r_phi1[threadIdx.x + shift] + s_phi2[idx + 1] - step_size * c_val, 0.) / scale;
         // update x (may diverge in warp...)
         if (offset + shift < n_total) {
             x[offset + shift] = x_val - step_size * c_val;
@@ -344,8 +344,8 @@ __global__ void quadratic_regularizer_update_x_odd(
         x_val = (offset + shift < n_total)?x[offset + shift]:-1e10;
         // compute update
         x_val = (n + shift < n_rows)?
-                max(x_val + r_phi1[threadIdx.x + shift] + s_phi2[idx], 0.) * scale:
-                max(x_val + r_phi1[threadIdx.x + shift] + s_phi2[idx + 1], 0.) * scale;
+                max(x_val + r_phi1[threadIdx.x + shift] + s_phi2[idx], 0.) / scale:
+                max(x_val + r_phi1[threadIdx.x + shift] + s_phi2[idx + 1], 0.) / scale;
         // update x (may diverge in warp...)
         if (offset + shift < n_total) {
             x[offset + shift] = x_val;

@@ -354,7 +354,7 @@ void group_lasso_regularizer_drot(
     *_n_iter = n_iter;
 }
 
-int _get_work_size_update_x(int n_rows, int n_cols) {
+int _gl_get_work_size_update_x(int n_rows, int n_cols) {
     int work_size_log2 = static_cast<int>(round(log2(max(n_rows, n_cols) * UPDATE_X_WORK_SIZE_SLOPE + UPDATE_X_WORK_SIZE_Y_INTERCEPT)));
     return exp2(min(max(work_size_log2, 2), 6));
 }
@@ -366,7 +366,7 @@ T* group_lasso_regularizer_drot_wrapper(const T *_c, // cost
         const int n_rows, // number of rows
         const int n_cols, // number of columns
         const int NGROUPS, // number of classes
-        const T step_size, // rho
+        const T step_size, // step size: rho / (n_rows + n_cols)
         const T r_weight, // weight for group-lasso regularizer
         const int max_iters, // maximal number of iter
         const T eps, // error for stopping criterior
@@ -381,8 +381,8 @@ T* group_lasso_regularizer_drot_wrapper(const T *_c, // cost
     const size_t mat_size = n_rows * n_cols * sizeof(T);
     const size_t row_size = n_rows * sizeof(T);
     const size_t col_size = n_cols * sizeof(T);
-    const int work_size_update_x = _get_work_size_update_x(n_rows, n_cols);
-    const T lambda = r_weight * sqrt(n_rows / NGROUPS);
+    const int work_size_update_x = _gl_get_work_size_update_x(n_rows, n_cols);
+    const T lambda = r_weight / (n_rows / NGROUPS);
 
     T *c, *p, *q, *x;
     T *a, *row_sum, *b, *col_sum;
@@ -448,13 +448,13 @@ T* group_lasso_regularizer_drot_wrapper(const T *_c, // cost
     } else {
         const T _n = T(n_rows);
         const T _m = T(n_cols);
-        const T _k = T(1.) * T(2.) * _n * _n * _m * _m / (_n * _n * _n + _m * _m * _m) - T(2.);
+        const T _k = T(1.) * step_size * _n * _m - T(2.);
 
-        const T v_phi1 = _m * (_k + T(2)) / (_n * _n) / (_m + _n);
-        const T v_phi2 = _n * (_k + T(2)) / (_m * _m) / (_m + _n);
-        const T v_a = _k / _n;
-        const T v_b = _k / _m;
-        const T v_alpha = _k;
+        const T v_phi1 = (_k + T(2)) / _n / (_m + _n);
+        const T v_phi2 = (_k + T(2)) / _m / (_m + _n);
+        const T v_a = (_k + T(1)) / _n;
+        const T v_b = (_k + T(1)) / _m;
+        const T v_alpha = _k + T(1);
         const T v_beta = 0;
 
         std::vector<T> c_phi1(n_rows, v_phi1);

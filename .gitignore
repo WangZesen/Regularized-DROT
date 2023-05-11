@@ -7,3 +7,5 @@
 /benchmark/bin/
 /benchmark/data/
 /benchmark/log/
+/benchmark/plot/
+/benchmark/log.bak/

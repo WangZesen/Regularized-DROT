@@ -9,27 +9,6 @@ def save(C, nrows, ncols, filename):
     C.tofile(output_file)
     output_file.close()
 
-def readfval(filename, dtype=np.float32):
-    f = []
-    with open(filename) as csvfile:
-        csvReader = csv.reader(csvfile, delimiter=",")
-        next(csvReader)  # skip the header
-        for row in csvReader:
-            f.append(float(row[0]))
-    return np.asarray(f, dtype=dtype)
-
-def readoutput(filename):
-    with open(filename) as csvfile:
-        k = []; t = []; r = []; f = [];
-        csvReader = csv.reader(csvfile, delimiter=",")
-        next(csvReader)  # skip the header
-        for row in csvReader:
-            k.append(int(row[0]))
-            t.append(float(row[1]))
-            r.append(float(row[2]))
-            f.append(float(row[3]))
-    return k, t, r, f
-
 def two_dimensional_gaussian_ot(m, n, filename=None):
     d = 2
     mu_s = np.random.normal(0.0, 1.0, (d,)) # Gaussian mean
@@ -44,7 +23,7 @@ def two_dimensional_gaussian_ot(m, n, filename=None):
     C = np.array(ot.dist(xs, xt)).astype(np.float32)
     C /= C.max()
     if filename is not None:
-        save(np.array(C, order='F'), m, n, filename)
+        save(C, m, n, filename)
     return m, n, C, p, q
 
 try:

@@ -3,7 +3,6 @@
 #include <cuda_runtime.h>
 #include <vector>
 
-// #include "param_qr.cuh"
 #include "drot_qr.hpp"
 
 #define CEILDIV(x, y) ((x+y-1)/y)
@@ -38,7 +37,7 @@ void quadratic_regularizer_drot_torch_float32(
     int n_iters, row_size, col_size, mat_size;
     step_size = rho / (float(n_rows) + float(n_cols));
 
-    const float scale = 1. / (1 + step_size * (n_rows + n_cols) * r_weight);
+    const float scale = 1 + step_size * r_weight * float(n_rows + n_cols);
     row_size = n_rows * sizeof(float);
     col_size = n_cols * sizeof(float);
     mat_size = n_rows * n_cols * sizeof(float);
@@ -46,13 +45,13 @@ void quadratic_regularizer_drot_torch_float32(
     // initialization
     const float _n = float(n_rows);
     const float _m = float(n_cols);
-    const float _k = float(1.0) * float(2.) * _n * _n * _m * _m / (_n * _n * _n + _m * _m * _m) - float(2.);
+    const float _k = float(1.0) * step_size * _n * _m - float(2.);
 
-    const float v_phi1 = _m * (_k + float(2)) / (_n * _n) / (_m + _n);
-    const float v_phi2 = _n * (_k + float(2)) / (_m * _m) / (_m + _n);
-    const float v_a = _k / _n;
-    const float v_b = _k / _m;
-    const float v_alpha = _k;
+    const float v_phi1 = (_k + float(2)) / _n / (_m + _n);
+    const float v_phi2 = (_k + float(2)) / _m / (_m + _n);
+    const float v_a = (_k + float(1)) / _n;
+    const float v_b = (_k + float(1)) / _m;
+    const float v_alpha = _k + float(1);
     const float v_beta = 0;
 
     std::vector<float> c_phi1(n_rows, v_phi1);
@@ -103,7 +102,7 @@ torch::Tensor quadratic_drot_cuda(
     auto x = torch::zeros_like(c, options);
 
     // allocate temporary variables
-    const int work_size_update_x = _get_work_size_update_x(n_rows, n_cols);
+    const int work_size_update_x = _q_get_work_size_update_x(n_rows, n_cols);
 
     auto a = torch::empty({n_rows}, options);
     auto row_sum = torch::empty({n_rows}, options);

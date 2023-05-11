@@ -38,15 +38,15 @@ def make_dataset(n_class, n_src, n_tgt, seed=None, dim=2, std=2):
     translation = 5*np.random.normal(size=(1, dim))
     Xt += translation
 
-    C = np.array(ot.dist(Xs, Xt)).astype(np.float32)
+    C = np.array(ot.dist(Xs, Xt)).T.astype(np.float32) # [N, M]
     C /= C.max()
     
     return Xs, ys, Xt, yt, C
 
 try:
     output_dir = sys.argv[1]
-    n_src = int(sys.argv[2])
-    n_tgt = int(sys.argv[3])
+    n_tgt = int(sys.argv[2]) # N
+    n_src = int(sys.argv[3]) # M
     n_class = int(sys.argv[4])
     n_tests = int(sys.argv[5])
     assert n_src >= 1
@@ -63,11 +63,11 @@ np.random.seed(123321)
 for i in range(n_tests):
     _seed = int(np.random.uniform(1, 1e8))
     Xs, ys, Xt, yt, C = make_dataset(n_class, n_src, n_tgt, _seed)
-    filename = os.path.join(output_dir, f"cmatrix_{n_src}_{n_tgt}_{n_class}_{i}")
-    save(np.array(C, order='F'), n_src, n_tgt, filename)
-    filename = os.path.join(output_dir, f"cmatrix_{n_src}_{n_tgt}_{n_class}_{i}_Xs")
+    filename = os.path.join(output_dir, f"cmatrix_{n_tgt}_{n_src}_{n_class}_{i}")
+    save(C, n_src, n_tgt, filename)
+    filename = os.path.join(output_dir, f"cmatrix_{n_tgt}_{n_src}_{n_class}_{i}_Xs")
     save_points(Xs, filename)
-    filename = os.path.join(output_dir, f"cmatrix_{n_src}_{n_tgt}_{n_class}_{i}_Xt")
+    filename = os.path.join(output_dir, f"cmatrix_{n_tgt}_{n_src}_{n_class}_{i}_Xt")
     save_points(Xt, filename)
 
-print(f"Generated {n_tests} C Matrix ({n_src}, {n_tgt}) with {n_class} classes at {output_dir}")
+print(f"Generated {n_tests} C Matrix ({n_tgt}, {n_src}) with {n_class} classes at {output_dir}")
