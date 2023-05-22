@@ -29,7 +29,7 @@
     make gendata DATA_DIR=<path-for-generated-data>
     ```
 
-- Run benchmark
+- Run benchmark for RDROT
     ```shell
     # Optimal Transport Benchmark for Quadratically Regularized DROT
     #   Output: ./log/quad_drot.log
@@ -48,6 +48,11 @@ The results are generated at
 - `./log/gl_drot_amend.log`: results for group-lasso regularized DROT with computed W-2 distance
 
 ### Benchmark for Other Methods
+
+Run all benchmarks
+```shell
+make benchmark DATA_DIR=<path-for-generated-data>
+```
 
 #### Sinkhorn's Algorithm with Entropic Reg. [1,2]
 

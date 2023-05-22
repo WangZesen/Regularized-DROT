@@ -382,7 +382,7 @@ T* group_lasso_regularizer_drot_wrapper(const T *_c, // cost
     const size_t row_size = n_rows * sizeof(T);
     const size_t col_size = n_cols * sizeof(T);
     const int work_size_update_x = _gl_get_work_size_update_x(n_rows, n_cols);
-    const T lambda = r_weight / (n_rows / NGROUPS);
+    const T lambda = r_weight / sqrt(n_rows / NGROUPS);
 
     T *c, *p, *q, *x;
     T *a, *row_sum, *b, *col_sum;

@@ -9,3 +9,4 @@
 /benchmark/log/
 /benchmark/plot/
 /benchmark/log.bak/
+/benchmark/utils/get_table.py

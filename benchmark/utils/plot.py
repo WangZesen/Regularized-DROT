@@ -4,10 +4,11 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 CONVERT_MAP = {
-    "int": ["test_index", "n", "m", "use_warmup_init", "max_iters", "n_iteration"],
-    "str": ["method", "history_size", "n_class"],
+    "int": ["test_index", "n", "m", "use_warmup_init", "max_iters", "n_iteration", "n_class"],
+    "str": ["method", "history_size"],
     "float": ["eps", "rho", "r_weight", "runtime_ms", "objective", "runtime_ms_per_iteration",
-              "residual", "gl_weight", "within_class_w2_dist", "learning_rate", "objective+L2"],
+              "residual", "gl_weight", "within_class_w2_dist", "learning_rate", "objective+L2",
+              "normed_within_class_w2_dist"],
 }
 
 def _convert(columns, content):
@@ -97,7 +98,7 @@ def compare_da(df: pd.DataFrame):
         sub_df = df.loc[(df.n == n) & (df.m == m)]
         sub_df = sub_df.groupby(["method", "r_weight", "gl_weight", "rho"], dropna=False).mean(numeric_only=True)
 
-        sfig = seaborn.scatterplot(sub_df, x="runtime_ms", y="within_class_w2_dist", hue="method", alpha=0.4)
+        sfig = seaborn.scatterplot(sub_df, x="runtime_ms", y="normed_within_class_w2_dist", hue="method", alpha=0.4)
         plt.ylabel("Objective")
         plt.xlabel("Runtime (ms)")
         plt.title(f"Domain Adaptation (Log Scale). Target={n}, Source={m}, Class={n_class}")
@@ -108,7 +109,7 @@ def compare_da(df: pd.DataFrame):
         fig.savefig(f"./plot/DA_{n}-{m}.png", dpi=300)
         plt.clf()
 
-LOG_DIR = "./result/"
+LOG_DIR = "./log/"
 os.makedirs("./plot", exist_ok=True)
 
 # Compare Optimal Transport

@@ -23,7 +23,7 @@ OT_TESTS := "100 100" "500 500" "1000 1000" "2000 2000" "2000 3000" "3000 2000" 
 # Unnormed Step Size
 OT_DROT_RHO := 2.0 1.0
 # Unnormed Weight for Quadratic Regularizer of DROT
-OT_DROT_R_WEIGHT := 0. 5e-4 1e-3 5e-3 1e-2 3e-2 6e-2 1e-1 2e-1 1e+0
+OT_DROT_R_WEIGHT := 0. 5e-4 1e-3 5e-3 1e-2 3e-2 6e-2 1e-1 2e-1
 # Weight for Entropic Regularizer of Sinkhorn's Algorithm
 OT_SK_R_WEIGHT := 1e-4 5e-4 1e-3 5e-3 1e-2 5e-2 1e-1 5e-1 1e+0 1e+1 1e+2
 # Learning Rate for L-BFGS Solver
@@ -33,7 +33,7 @@ OT_LBFGS_LR := 1e-0 1e-1
 # Problem Sizes & Number of Classes
 DA_TESTS := "100 100 2" "500 500 2" "1000 1000 4" "1500 1000 2" "1020 1500 3"
 # Unnormed Weight for Group-Lasso Regularizer (both DROT and SK)
-DA_GL_WEIGHT := 1e-6 1e-5 1e-4 5e-4 1e-3 5e-3 1e-2 5e-2
+DA_GL_WEIGHT := 1e-6 1e-5 5e-5 1e-4 5e-4 1e-3
 # Weight for Entropic Regularizer of Sinkhorn's Algorithm
 DA_SK_ER_WEIGHT := 1e-3 1e-2 1e-1 1e-0 1e+1
 
@@ -55,6 +55,8 @@ SK_MAX_ITER = 20000
 LBFGS_HISTORY = 10
 
 .PHONY: benchmark gendata
+
+benchmark: benchmark-drot benchmark-sk benchmark-lbfgs benchmark-drot-da benchmark-sk-da post-da
 
 # Benchmark for DROT
 benchmark-drot: build
@@ -130,6 +132,10 @@ benchmark-lbfgs:
 			done; \
 		done; \
 	done
+
+# Post DA
+post-da:
+	python utils/compute_w2_dist.py $(DA_DATA_DIR) $(DA_OUT_DATA_DIR)
 
 gendata:
 	mkdir $(DATA_DIR)/data

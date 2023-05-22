@@ -70,6 +70,7 @@ def compute_group_wasserstain_2_dist(Xt, trans, n_group):
     adapted_Xt = adapt_target_domain(Xt, trans, _p)
 
     total_obj = 0.
+    norm_obj = 0.
     for i in range(n_group):
         s = round(Xt.shape[0] / n_group * i)
         t = round(Xt.shape[0] / n_group * (i + 1))
@@ -85,8 +86,12 @@ def compute_group_wasserstain_2_dist(Xt, trans, n_group):
         x = reg_drot.quadratic_drot(c, p, q, DROT_RHO, 0., DROT_MAX_ITERS, DROT_EPS)
         residual = torch.sqrt(torch.sum(torch.square(torch.sum(x, dim=0) - p)) + torch.sum(torch.square(torch.sum(x, dim=1) - q)))
         assert residual < DROT_EPS*2, f"{residual}"
-        total_obj += torch.sum(torch.multiply(c, x)).numpy(force=True) * c_max
-    return total_obj
+
+        dist_norm = np.mean(np.sqrt(np.sum(np.square(Xt[s:t] - np.mean(Xt[s:t], axis=0)), axis=1)))
+        obj = torch.sum(torch.multiply(c, x)).numpy(force=True) * c_max
+        total_obj += obj
+        norm_obj += obj / (dist_norm * (adapted_t - adapted_s))
+    return total_obj, norm_obj
 
 def find_r_weight(data, r_weight):
     for item in data:
@@ -119,7 +124,7 @@ with open("./log/gl_drot_amend.log", "w") as f:
                 i += 1
             continue
         else:
-            print(content[i]+"\twithin_class_w2_dist", file=f)
+            print(content[i]+"\twithin_class_w2_dist\tnormed_within_class_w2_dist", file=f)
             test_index_ind = content[i].split("\t").index("test_index")
             n_ind = content[i].split("\t").index("n")
             m_ind = content[i].split("\t").index("m")
@@ -137,11 +142,11 @@ with open("./log/gl_drot_amend.log", "w") as f:
                 Xt = np.load(os.path.join(DA_DATA_DIR, f"cmatrix_{n}_{m}_{n_class}_{test_index}_Xt.npy"), allow_pickle=False)
                 trans_file = os.path.join(DA_OUT_DATA_DIR, "drot", r_weight_str, f"drot-gl_{n}_{m}_{n_class}_{test_index}")
                 trans = load_x(trans_file)
-                obj = compute_group_wasserstain_2_dist(Xt, trans, n_class)
-                print(content[i]+f"\t{obj:.8f}", file=f, flush=True)
+                obj, norm_obj = compute_group_wasserstain_2_dist(Xt, trans, n_class)
+                print(content[i]+f"\t{obj:.8f}\t{norm_obj:.8f}", file=f, flush=True)
                 i += 1
                 print(f"{i:4d}/{len(content)}")
-                
+
 sk = get_all_sk_output(DA_OUT_DATA_DIR)
 
 # Add results to log
@@ -161,7 +166,7 @@ with open("./log/sk_entropic_gl_amend.log", "w") as f:
                 i += 1
             continue
         else:
-            print(content[i]+"\twithin_class_w2_dist", file=f)
+            print(content[i]+"\twithin_class_w2_dist\tnormed_within_class_w2_dist", file=f)
             test_index_ind = content[i].split("\t").index("test_index")
             n_ind = content[i].split("\t").index("n")
             m_ind = content[i].split("\t").index("m")
@@ -183,8 +188,8 @@ with open("./log/sk_entropic_gl_amend.log", "w") as f:
                 Xt = np.load(os.path.join(DA_DATA_DIR, f"cmatrix_{n}_{m}_{n_class}_{test_index}_Xt.npy"), allow_pickle=False)
 
                 trans_file = os.path.join(DA_OUT_DATA_DIR, "sk", r_weight_str, gl_weight_str, f"sinkhorn-gl_{n}_{m}_{n_class}_{test_index}.npy")
-                trans = np.load(trans_file, allow_pickle=False)
-                obj = compute_group_wasserstain_2_dist(Xt, trans, n_class)
-                print(content[i]+f"\t{obj:.8f}", file=f, flush=True)
+                trans = np.load(trans_file, allow_pickle=False).T
+                obj, norm_obj = compute_group_wasserstain_2_dist(Xt, trans, n_class)
+                print(content[i]+f"\t{obj:.8f}\t{norm_obj:.8f}", file=f, flush=True)
                 print(f"{i:4d}/{len(content)}")
                 i += 1

@@ -33,27 +33,27 @@ except:
 
 def load_c(n_test):
     c = np.fromfile(f"{DATA_DIR}/cmatrix_{N_ROWS}_{N_COLS}_{N_CLASS}_{n_test}", dtype=np.float32)
-    c = c.reshape((N_ROWS, N_COLS)).T
+    c = c.reshape((N_ROWS, N_COLS))
     return c
 
-def benchmark(c, q, p, label, reg, eta, max_iter, stop_thres):
+def benchmark(c, p, q, label, reg, eta, max_iter, stop_thres):
     c_cp = cp.asarray(c.astype(np.float64))
     p_cp = cp.asarray(p.astype(np.float64))
     q_cp = cp.asarray(q.astype(np.float64))
     label_cp = cp.asarray(label)
     start = time.perf_counter_ns()
-    x = ot.da.sinkhorn_l1l2_gl(q_cp, label_cp, p_cp, c_cp, reg=reg, eta=eta / math.sqrt(N_ROWS/N_CLASS), numItermax=max_iter, stopInnerThr=stop_thres)
+    x = ot.da.sinkhorn_l1l2_gl(p_cp, label_cp, q_cp, c_cp, reg=reg, eta=eta / math.sqrt(N_ROWS/N_CLASS), numItermax=max_iter, stopInnerThr=stop_thres)
     end = time.perf_counter_ns()
     x = cp.asnumpy(x)
     obj = np.sum(np.multiply(x, c))
-    res = np.sqrt(np.sum(np.square(np.sum(x, axis=0) - p)) + np.sum(np.square(np.sum(x, axis=1) - q)))
+    res = np.sqrt(np.sum(np.square(np.sum(x, axis=1) - p)) + np.sum(np.square(np.sum(x, axis=0) - q)))
     return end - start, res, obj, x
 
 p = np.ones((N_ROWS,), dtype=np.float32) / N_ROWS
 q = np.ones((N_COLS,), dtype=np.float32) / N_COLS
-label = np.zeros((N_COLS,), dtype=np.int32)
+label = np.zeros((N_ROWS,), dtype=np.int32)
 for i in range(N_CLASS):
-    label[round(N_COLS / N_CLASS * i):round(N_COLS / N_CLASS * (i + 1))] = i
+    label[round(N_ROWS / N_CLASS * i):round(N_ROWS / N_CLASS * (i + 1))] = i
 
 ts = []
 objs = []
@@ -61,7 +61,7 @@ ress = []
 n_iters = []
 for i in range(N_TEST):
     c = load_c(i)
-    t, res, obj, x = benchmark(c, q, p, label, R_WEIGHT, E_WEIGHT, MAX_ITER, EPS)
+    t, res, obj, x = benchmark(c, p, q, label, R_WEIGHT, E_WEIGHT, MAX_ITER, EPS)
     ts.append(t / 1e6)
     objs.append(obj)
     ress.append(res)

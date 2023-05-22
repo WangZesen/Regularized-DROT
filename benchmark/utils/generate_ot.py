@@ -4,7 +4,6 @@ import ot
 import csv
 
 def save(C, nrows, ncols, filename):
-    assert C.flags['F_CONTIGUOUS']
     output_file = open(filename, 'wb')
     C.tofile(output_file)
     output_file.close()
