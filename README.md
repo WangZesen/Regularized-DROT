@@ -12,14 +12,14 @@ The benchmarks were run on one Tesla V100 GPU.
 
 **Problem Setting for Quadratic Regularized Optimal Transport**
 
-$$
+```math
 \begin{align}
     \begin{array}{ll}
         \underset{X \in \mathbb{R}_+^{m \times n}}{\text{minimize}} &\left\langle C, X\right\rangle + \frac{(m+n)\alpha}{2}\Vert X\Vert_F^2 \\
         \text{subject to} & X \mathbf{1}_n = p, X^\top \mathbf{1}_m = q
     \end{array}
 \end{align}
-$$
+```
 
 Comparison between our method and the method solving the smooth relaxed dual based on L-BFGS [[1](#references)] (using [PyTorch's L-BFGS optimizer implementation](https://pytorch.org/docs/stable/generated/torch.optim.LBFGS.html)) with problem sizes `1000x1000` (left) and `3000x3000` (right).
 
@@ -62,7 +62,7 @@ We simulated 50 datasets with two features, `1500` training samples, and `1000` 
 To assess the quality of the adaptation, we compute the Wasserstein distance between the adapted samples of each label and the corresponding samples of the test set. This means that the better the alignment, the lower the aggregated distances. For the method using entropic regularization, we varied the regularization parameters $0.001$ to $100$, and the group lasso regularization was set to $0.001$ and $0.005$.
 
 
-| Method | Ent | GL | Median <br/> (Runtime) | $q10$ <br/> (Runtime) | $q90$ <br/> (Runtime) | Median <br/> (W-dist) | $q10$ <br/> (W-dist) | $q90$ <br/> (W-dist) |
+| Method | Ent | GL | Median <br/> (RT) | q10 <br/> (RT) | q90 <br/> (RT) | Median <br/> (Dist) | q10 <br/> (Dist) | q90 <br/> (Dist) |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | GLSK [[2](#references)] | `1e-3` | `1e-3` | 3.77 | 3.68 | 8.90 | 0.311 | 0.0657 | 6.48 |
 | GLSK [[2](#references)] | `1e-1` | `1e-3` | 3.73 | 3.71 | 3.77 | 8.24 | 3.47 | 31.6 |
@@ -73,7 +73,7 @@ To assess the quality of the adaptation, we compute the Wasserstein distance bet
 - GLSK: Group-lasso regularized Sinkhorn's algorithm [[2](#references)]. The GPU implementation is available in [POT](https://pythonot.github.io/gen_modules/ot.da.html#ot.da.sinkhorn_l1l2_gl).
 - GLDROT: Our method.
 
-*W-dist: Wasserstein distance, $q10$: 10th percentile, $q90$: 90th percentile*.
+*RT: Runtime in second, Dist: Wasserstein distance, q10: 10th percentile, q90: 90th percentile*.
 
 The results are presented in the table above, in which it is clear that our
 method consistently outperforms the alternative methods, both in terms of adaptation quality, but also
