@@ -62,7 +62,7 @@ We simulated 50 datasets with two features, `1500` training samples, and `1000` 
 To assess the quality of the adaptation, we compute the Wasserstein distance between the adapted samples of each label and the corresponding samples of the test set. This means that the better the alignment, the lower the aggregated distances. For the method using entropic regularization, we varied the regularization parameters $0.001$ to $100$, and the group lasso regularization was set to $0.001$ and $0.005$.
 
 
-| Method | Ent | GL | Median | $q10$ | $q90$ | Median | $q10$ | $q90$ |
+| Method | Ent | GL | Median (RT) | $q10$ (RT) | $q90$ (RT) | Median (W-dist) | $q10$ (W-dist) | $q90$ (W-dist) |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | GLSK [[2](#references)] | `1e-3` | `1e-3` | 3.77 | 3.68 | 8.90 | 0.311 | 0.0657 | 6.48 |
 | GLSK [[2](#references)] | `1e-1` | `1e-3` | 3.73 | 3.71 | 3.77 | 8.24 | 3.47 | 31.6 |
@@ -72,6 +72,7 @@ To assess the quality of the adaptation, we compute the Wasserstein distance bet
 
 - GLSK: Group-lasso regularized Sinkhorn's algorithm [[2](#references)]. The GPU implementation is available in [POT](https://pythonot.github.io/gen_modules/ot.da.html#ot.da.sinkhorn_l1l2_gl).
 - GLDROT: Our method.
+- *RT: runtime,* *W-dist: Wasserstein distance.*
 
 The results are presented in the table above, in which it is clear that our
 method consistently outperforms the alternative methods, both in terms of adaptation quality, but also
