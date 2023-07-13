@@ -16,7 +16,7 @@ $$
 \begin{align}
     \begin{array}{ll}
         \underset{X \in \mathbb{R}_+^{m \times n}}{\text{minimize}} &\left\langle C, X\right\rangle + \frac{(m+n)\alpha}{2}\Vert X\Vert_F^2 \\
-        \text{subject to} & X \mathbf{1}_n = p, \,\, X^\top \mathbf{1}_m = q
+        \text{subject to} & X \mathbf{1}_n = p, X^\top \mathbf{1}_m = q
     \end{array}
 \end{align}
 $$
@@ -41,7 +41,7 @@ $$
 \begin{align}
     \begin{array}{ll}
         \underset{X \in \mathbb{R}_+^{m \times n}}{\text{minimize}} &\left\langle C, X\right\rangle + \lambda\sum_{g\in\mathcal{G}} \Vert X_g\Vert_F\\
-        \text{subject to} & X \mathbf{1}_n = p, \,\, X^\top \mathbf{1}_m = q &
+        \text{subject to} & X \mathbf{1}_n = p, X^\top \mathbf{1}_m = q &
     \end{array}
 \end{align}
 $$
@@ -52,7 +52,7 @@ $$
 \begin{align}
     \begin{array}{ll}
         \underset{X \in \mathbb{R}_+^{m \times n}}{\text{minimize}} & \left\langle C, X\right\rangle + \lambda\sum_{g\in\mathcal{G}} \Vert X_g\Vert_F + \text{reg}\cdot\sum_{i,j} X_{i,j}\log(X_{i,j})\\
-        \text{subject to} & X \mathbf{1}_n = p, \,\, X^\top \mathbf{1}_m = q &
+        \text{subject to} & X \mathbf{1}_n = p, X^\top \mathbf{1}_m = q &
     \end{array}
 \end{align}
 $$
