@@ -15,8 +15,8 @@ The benchmarks were run on one Tesla V100 GPU.
 $$
 \begin{align}
     \begin{array}{ll}
-        \underset{X \in \R_+^{m \times n}}{\text{minimize}} &\left\langle C, X\right\rangle + \frac{(m+n)\alpha}{2}\Vert X\Vert_F^2 \\
-        \text{subject to} & X \bold{1}_n = p, \,\, X^\top \bold{1}_m = q
+        \underset{X \in \mathbb{R}_+^{m \times n}}{\text{minimize}} &\left\langle C, X\right\rangle + \frac{(m+n)\alpha}{2}\Vert X\Vert_F^2 \\
+        \text{subject to} & X \mathbf{1}_n = p, \,\, X^\top \mathbf{1}_m = q
     \end{array}
 \end{align}
 $$
@@ -28,8 +28,8 @@ Comparison between our method and the method solving the smooth relaxed dual bas
 
 <img src="./figures/quadratic_reg_drot_1000.png" width="49%" alt="Compare with LBFGS-based method with quadratic regularizer with n=m=1000"/> <img src="./figures/quadratic_reg_drot_3000.png" width="49%" alt="Compare with LBFGS-based method with quadratic regularizer with n=m=3000"/>
 
-- QDROT: our method
-- LBFGS: the method solving the smooth relaxed dual based on L-BFGS [[1](#references)]
+- QDROT: Our method.
+- LBFGS: The method solving the smooth relaxed dual based on L-BFGS [[1](#references)].
 
 It is clear that our method better exploits the parallelization from the GPU, as it consistently leads to a speedup of at least one order of magnitude compared to the L-BFGS method.
 
@@ -40,8 +40,8 @@ It is clear that our method better exploits the parallelization from the GPU, as
 $$
 \begin{align}
     \begin{array}{ll}
-        \underset{X \in \R_+^{m \times n}}{\text{minimize}} &\left\langle C, X\right\rangle + \lambda\sum_{g\in\mathcal{G}} \Vert X_g\Vert_F\\
-        \text{subject to} & X \bold{1}_n = p, \,\, X^\top \bold{1}_m = q &
+        \underset{X \in \mathbb{R}_+^{m \times n}}{\text{minimize}} &\left\langle C, X\right\rangle + \lambda\sum_{g\in\mathcal{G}} \Vert X_g\Vert_F\\
+        \text{subject to} & X \mathbf{1}_n = p, \,\, X^\top \mathbf{1}_m = q &
     \end{array}
 \end{align}
 $$
@@ -51,11 +51,15 @@ $$
 $$
 \begin{align}
     \begin{array}{ll}
-        \underset{X \in \R_+^{m \times n}}{\text{minimize}} & \left\langle C, X\right\rangle + \lambda\sum_{g\in\mathcal{G}} \Vert X_g\Vert_F + \text{reg}\cdot\sum_{i,j} X_{i,j}\log(X_{i,j})\\
-        \text{subject to} & X \bold{1}_n = p, \,\, X^\top \bold{1}_m = q &
+        \underset{X \in \mathbb{R}_+^{m \times n}}{\text{minimize}} & \left\langle C, X\right\rangle + \lambda\sum_{g\in\mathcal{G}} \Vert X_g\Vert_F + \text{reg}\cdot\sum_{i,j} X_{i,j}\log(X_{i,j})\\
+        \text{subject to} & X \mathbf{1}_n = p, \,\, X^\top \mathbf{1}_m = q &
     \end{array}
 \end{align}
 $$
+
+We simulated 50 datasets with two features, `1500` training samples, and `1000` test samples. The transformed domain of the test set is achieved by a random affine transformation of the source domain. Each set had 2 unique labels that were uniformly distributed among the instances. The labels in the test set were only used for validation.
+
+To assess the quality of the adaptation, we compute the Wasserstein distance between the adapted samples of each label and the corresponding samples of the test set. This means that the better the alignment, the lower the aggregated distances. For the method using entropic regularization, we varied the regularization parameters $0.001$ to $100$, and the group lasso regularization was set to $0.001$ and $0.005$.
 
 
 | Method | Ent | GL | Median | $q10$ | $q90$ | Median | $q10$ | $q90$ |
@@ -66,7 +70,12 @@ $$
 | GLDROT (ours) | - | `1e-3` | 0.0619 | 0.0475 | 0.0771 | **0.0576** | 0.0262 | 0.182 |
 | GLDROT (ours) | - | `5e-3` | **0.0384** | 0.0306 | 0.0474 | 0.0879 | 0.0358 | 0.274 |
 
+- GLSK: Group-lasso regularized Sinkhorn's algorithm [[2](#references)]. The GPU implementation is available in [POT](https://pythonot.github.io/gen_modules/ot.da.html#ot.da.sinkhorn_l1l2_gl).
+- GLDROT: Our method.
 
+The results are presented in the table above, in which it is clear that our
+method consistently outperforms the alternative methods, both in terms of adaptation quality, but also
+time to reach convergence
 
 ## Folder Structure
 
@@ -79,7 +88,7 @@ $$
 
 
 ## Citation
-To cite this repo, please include
+To cite this repo and our paper, please include
 ```
 @article{lindback2023bringing,
   title={Bringing regularized optimal transport to lightspeed: a splitting method adapted for GPUs},
