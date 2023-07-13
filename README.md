@@ -37,32 +37,32 @@ It is clear that our method better exploits the parallelization from the GPU, as
 
 **Problem Setting for Group-Lasso Regularized Optimal Transport (our method)**
 
-$$
+```math
 \begin{align}
     \begin{array}{ll}
         \underset{X \in \mathbb{R}_+^{m \times n}}{\text{minimize}} &\left\langle C, X\right\rangle + \lambda\sum_{g\in\mathcal{G}} \Vert X_g\Vert_F\\
         \text{subject to} & X \mathbf{1}_n = p, X^\top \mathbf{1}_m = q &
     \end{array}
 \end{align}
-$$
+```
 
 **Problem Setting for Group-Lasso Regularized Optimal Transport (Based On Sinkhorn's Algorithm [[2](#references)])**
 
-$$
+```math
 \begin{align}
     \begin{array}{ll}
         \underset{X \in \mathbb{R}_+^{m \times n}}{\text{minimize}} & \left\langle C, X\right\rangle + \lambda\sum_{g\in\mathcal{G}} \Vert X_g\Vert_F + \text{reg}\cdot\sum_{i,j} X_{i,j}\log(X_{i,j})\\
         \text{subject to} & X \mathbf{1}_n = p, X^\top \mathbf{1}_m = q &
     \end{array}
 \end{align}
-$$
+```
 
 We simulated 50 datasets with two features, `1500` training samples, and `1000` test samples. The transformed domain of the test set is achieved by a random affine transformation of the source domain. Each set had 2 unique labels that were uniformly distributed among the instances. The labels in the test set were only used for validation.
 
 To assess the quality of the adaptation, we compute the Wasserstein distance between the adapted samples of each label and the corresponding samples of the test set. This means that the better the alignment, the lower the aggregated distances. For the method using entropic regularization, we varied the regularization parameters $0.001$ to $100$, and the group lasso regularization was set to $0.001$ and $0.005$.
 
 
-| Method | Ent | GL | Median (RT) | $q10$ (RT) | $q90$ (RT) | Median (W-dist) | $q10$ (W-dist) | $q90$ (W-dist) |
+| Method | Ent | GL | Median <br/> (Runtime) | $q10$ <br/> (Runtime) | $q90$ <br/> (Runtime) | Median <br/> (W-dist) | $q10$ <br/> (W-dist) | $q90$ <br/> (W-dist) |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | GLSK [[2](#references)] | `1e-3` | `1e-3` | 3.77 | 3.68 | 8.90 | 0.311 | 0.0657 | 6.48 |
 | GLSK [[2](#references)] | `1e-1` | `1e-3` | 3.73 | 3.71 | 3.77 | 8.24 | 3.47 | 31.6 |
@@ -72,7 +72,8 @@ To assess the quality of the adaptation, we compute the Wasserstein distance bet
 
 - GLSK: Group-lasso regularized Sinkhorn's algorithm [[2](#references)]. The GPU implementation is available in [POT](https://pythonot.github.io/gen_modules/ot.da.html#ot.da.sinkhorn_l1l2_gl).
 - GLDROT: Our method.
-- *RT: runtime,* *W-dist: Wasserstein distance.*
+
+*W-dist: Wasserstein distance, $q10$: 10th percentile, $q90$: 90th percentile*.
 
 The results are presented in the table above, in which it is clear that our
 method consistently outperforms the alternative methods, both in terms of adaptation quality, but also
