@@ -88,6 +88,19 @@ time to reach convergence
 - `/numpy`: cpu version based on numpy (with numba accelleration) of the Regularized DROT implementation
 - `/numpy/examples`: notebook demos with comparisons between regdrot and state-of-the-art implemented in [POT](https://pythonot.github.io/).
 
+## Reproducing the Examples
+
+To reproduce the examples provided in the `/numpy/examples` directory, we recommend setting up a conda environment using either **conda** or **miniconda**. Please ensure that you have either of these installed before proceeding.
+
+Follow the steps below to set up and activate the virtual environment:
+
+```
+conda env create
+conda activate regdrot
+```
+This will activate the `regdrot` environment and ensure that the required dependencies are available.
+
+You are now ready to reproduce the examples in the `/numpy/examples` directory. Simply navigate to the desired example file and run it using your preferred  Jupyter notebook environment. :)
 
 ## Citation
 To cite this repo and our paper, please include
