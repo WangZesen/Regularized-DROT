@@ -85,8 +85,8 @@ time to reach convergence
 - `/tensorflow`: tensorflow CUDA extension. See [`/tensorflow/README.md`](./tensorflow/README.md) for how to proceed.
 - `/pytorch`: pytorch CUDA extension. See [`/pytorch/README.md`](./pytorch/README.md) for how to proceed.
 - `/benchmark`: benchmarking for Quadratic Regularized DROT and Group-Lasso Regularized DROT
-- `/cpu`: cpu version of the Regularized DROT implementation
-- `/demo`: [POT](https://pythonot.github.io/)-compatible demos
+- `/numpy`: cpu version based on numpy (with numba accelleration) of the Regularized DROT implementation
+- `/numpy/examples`: notebook demos with comparisons between regdrot and state-of-the-art implemented in [POT](https://pythonot.github.io/).
 
 
 ## Citation
