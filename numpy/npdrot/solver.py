@@ -54,7 +54,7 @@ def regdrot(init, C, p, q, prox, **kwargs):
     return_log = kwargs.pop("return_log", False)
 
     # Callback
-    callbacks = kwargs.pop("callback", None)
+    callbacks = kwargs.pop("callbacks", None)
 
     # Initialization strategy
     init_strategy = kwargs.pop("init_strategy", False)
@@ -100,6 +100,13 @@ def regdrot(init, C, p, q, prox, **kwargs):
     r_gap = np.zeros(max_iters)
     r_dual = np.zeros(max_iters)
 
+
+    if callbacks is not None:
+        assert isinstance(callbacks, dict)
+        callback_log = {callback_name: np.zeros(max_iters) for callback_name in callbacks.keys()}
+    else:
+        callback_log = dict()
+    
     done = False
 
     start = time()
@@ -140,6 +147,11 @@ def regdrot(init, C, p, q, prox, **kwargs):
         if compute_r_primal or compute_r_dual:
             r_full = max([r_primal[k], r_dual[k]])
 
+        if callbacks is not None:
+            for callback_name, callback in callbacks.items():
+                callback_log[callback_name][k] = callback(x, -yy.dot(p)/(n*step), -xx.dot(q)/(m*step), **kwargs)
+
+
         apply_adjoint_operator_and_override(e, f, yy, xx, x, -1.0/n, -1.0/m)           
 
         if (k % print_every == 0 or k == max_iters-1) and verbose:
@@ -166,6 +178,12 @@ def regdrot(init, C, p, q, prox, **kwargs):
                 "dual":         np.array(r_dual[:k]),
                 "num_iters":    k,
                 "solve_time":   (end - start)}
+
+        for name, logged_callbacks in callback_log.items():
+            callback_log[name] = logged_callbacks[:k]
+
+        log.update(callback_log)
+        
         return x, log
     
     return x
