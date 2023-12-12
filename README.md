@@ -116,4 +116,4 @@ To cite this repo and our paper, please include
 ## References
 [1] Mathieu Blondel, Vivien Seguy, and Antoine Rolet. Smooth and sparse optimal transport. In *International conference on artificial intelligence and statistics*, pages 880–889. PMLR, 2018.
 
-[2] Nicolas Courty, Rémi Flamary, Amaury Habrard, and Alain Rakotomamonjy. Joint distribution optimal transportation for domain adaptation. *Advances in Neural Information Processing Systems*, 30, 2017.
+[2] Nicolas Courty, Flamary Rémi, and Tuia Devis. Domain adaptation with regularized optimal transport. In *Machine Learning and Knowledge Discovery in Databases: European Conference*, Springer Berlin Heidelberg, 2014.
