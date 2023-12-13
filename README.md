@@ -108,7 +108,8 @@ To cite this repo and our paper, please include
 @article{lindback2023bringing,
   title={Bringing regularized optimal transport to lightspeed: a splitting method adapted for GPUs},
   author={Lindb{\"a}ck, Jacob and Wang, Zesen and Johansson, Mikael},
-  journal={arXiv preprint arXiv:2305.18483},
+  journal={Advances in neural information processing systems},
+  volume={36},
   year={2023}
 }
 ```
